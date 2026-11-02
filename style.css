@@ -1,0 +1,55 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+  color: #222;
+  background: white;
+}
+
+body > header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  padding: 6px 12px;
+  background: #173d32;
+  border-bottom: 1px solid #173d32;
+}
+
+#cle {
+  width: 100%;
+  height: 32px;
+  padding: 6px 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font: inherit;
+  font-size: 14px;
+}
+
+#statut {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+main > section {
+  width: 100%;
+  max-height: 420px;
+  overflow: auto;
+  position: relative;
+  isolation: isolate;
+  contain: layout paint;
+  padding: 24px;
+  border-bottom: 1px solid #ddd;
+}
+
+main > section > h2 {
+  margin: 0 0 16px;
+  font: 500 14px system-ui, sans-serif;
+  overflow-wrap: anywhere;
+}
