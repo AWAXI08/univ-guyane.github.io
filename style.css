@@ -15,10 +15,11 @@ body > header {
   z-index: 10;
   padding: 6px 12px;
   background: #173d32;
-  border-bottom: 1px solid #173d32;
 }
 
-#cle {
+#cle,
+#recherche {
+  display: block;
   width: 100%;
   height: 32px;
   padding: 6px 10px;
@@ -37,19 +38,133 @@ body > header {
   white-space: nowrap;
 }
 
+#introduction {
+  height: calc(100vh - 44px);
+  height: calc(100dvh - 44px);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: clamp(24px, 5vw, 80px);
+  padding: clamp(16px, 4vh, 48px) clamp(20px, 5vw, 80px);
+  overflow: hidden;
+  color: white;
+  background: #173d32;
+  overflow-wrap: anywhere;
+}
+
+#presentation {
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: safe center;
+  gap: 20px;
+  overflow: auto;
+}
+
+#annuaire {
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+#introduction h1 {
+  margin: 0;
+  font-size: clamp(28px, 4.5vw, 64px);
+  line-height: 1.1;
+  letter-spacing: -0.04em;
+}
+
+#introduction p {
+  margin: 0;
+  font-size: clamp(16px, 2vw, 22px);
+  line-height: 1.6;
+}
+
 main > section {
   width: 100%;
-  max-height: 420px;
-  overflow: auto;
-  position: relative;
-  isolation: isolate;
-  contain: layout paint;
-  padding: 24px;
+  height: 420px;
+  display: flex;
+  flex-direction: column;
   border-bottom: 1px solid #ddd;
 }
 
-main > section > h2 {
-  margin: 0 0 16px;
-  font: 500 14px system-ui, sans-serif;
+.identite {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 24px;
+  padding: 12px 24px;
   overflow-wrap: anywhere;
+}
+
+.identite > span {
+  margin: 0;
+  font: 500 14px system-ui, sans-serif;
+}
+
+.identite code {
+  font: 12px monospace;
+  color: #52695e;
+}
+
+iframe {
+  display: block;
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+  border: 0;
+}
+
+#erreur {
+  padding: 16px 24px;
+  color: #9c2020;
+}
+
+#espaces {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  min-height: 0;
+  flex: 1;
+  overflow: auto;
+}
+
+#espaces li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+  padding: 8px 0;
+  overflow-wrap: anywhere;
+}
+
+#espaces code {
+  opacity: .7;
+}
+
+#recherche {
+  flex-shrink: 0;
+  background: white;
+  color: #222;
+}
+
+#espaces li[hidden] {
+  display: none;
+}
+
+#introduction #aucun-resultat {
+  font-size: 14px;
+}
+
+@media (max-width: 600px) {
+  #introduction {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) minmax(0, 2fr);
+    gap: 20px;
+  }
+
+  #introduction h1 {
+    font-size: 28px;
+  }
 }
