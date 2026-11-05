@@ -1,0 +1,273 @@
+<div>
+    <style>
+  :root {
+    font-family: system-ui, sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 20px 12px; }
+  h1 { font-size: 1.5rem; margin: 0 0 4px; text-align: center; }
+  .subtitle { color: #94a3b8; margin: 0 0 18px; font-size: .92rem; text-align: center; }
+  .controls { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 14px; align-items: center; }
+  button {
+    background: #38bdf8; color: #0f172a; border: none; border-radius: 8px;
+    padding: 9px 16px; font-weight: 600; cursor: pointer; font-size: .9rem;
+  }
+  button:hover { background: #7dd3fc; }
+  button.ghost { background: transparent; color: #38bdf8; border: 1px solid #38bdf8; }
+  button.ghost:hover { background: rgba(56,189,248,.15); }
+  label { display: flex; flex-direction: column; gap: 4px; font-size: .8rem; color: #94a3b8; }
+  select, input[type=range] { accent-color: #38bdf8; }
+  select { background: #1e293b; color: #e2e8f0; border: 1px solid #334155; border-radius: 6px; padding: 6px 8px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; width: 100%; max-width: 1000px; }
+  .panel { background: #1e293b; border-radius: 12px; padding: 12px; box-shadow: 0 8px 24px rgba(0,0,0,.3); cursor: pointer; transition: outline .15s; }
+  .panel:hover { outline: 2px solid #38bdf8; }
+  .panel .hint { font-size: .7rem; color: #64748b; margin: 0 0 6px; }
+  .grid.focused { grid-template-columns: minmax(0, 640px); }
+  .grid.focused .panel { display: none; }
+  .grid.focused .panel.focused { display: block; }
+  .grid.focused .bars { height: 360px; }
+  .grid.focused .bar .val { font-size: 16px; top: -21px; font-weight: 600; }
+  .grid.focused .explain { font-size: .9rem; line-height: 1.55; }
+  .grid.focused .panel h2 { font-size: 1.3rem; }
+  .grid.focused .panel .big-o { font-size: .9rem; }
+  .panel h2 { margin: 0 0 2px; font-size: 1rem; }
+  .panel .big-o { color: #94a3b8; font-size: .78rem; margin: 0 0 10px; }
+  .bars { display: flex; align-items: flex-end; gap: 2px; height: 170px; background: #0f172a; border-radius: 8px; padding: 10px 8px; }
+  .bar { flex: 1; border-radius: 3px 3px 0 0; background: #38bdf8; transition: height .12s; position: relative; }
+  .bar .val {
+    position: absolute; top: -17px; left: 50%; transform: translateX(-50%);
+    font-size: 10px; color: #cbd5e1; line-height: 1;
+  }
+  .bar.compare { background: #fbbf24; }
+  .bar.swap { background: #f87171; }
+  .bar.sorted { background: #4ade80; }
+  .stats { margin-top: 8px; font-size: .78rem; color: #94a3b8; display: flex; gap: 12px; flex-wrap: wrap; }
+  .stats b { color: #e2e8f0; }
+  .explain { margin-top: 10px; font-size: .78rem; color: #94a3b8; line-height: 1.45; }
+  .explain b { color: #e2e8f0; }
+  .done { color: #4ade80 !important; }
+  .legend { margin: 14px 0 0; display: flex; gap: 14px; justify-content: center; font-size: .78rem; color: #94a3b8; flex-wrap: wrap; }
+  .dot { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 4px; vertical-align: middle; }
+</style>
+</head>
+<body>
+  <h1>🫊 Comparateur d'algorithmes de tri</h1>
+  <p class="subtitle">Les trois algorithmes trient <b>le même tableau</b>, en même temps. Regarde lequel gagne !</p>
+
+  <div class="controls">
+    <label>Taille
+      <select id="size">
+        <option>10</option><option selected>14</option><option>20</option>
+      </select>
+    </label>
+    <label>Vitesse
+      <input type="range" id="speed" min="1" max="20" value="8" />
+    </label>
+    <button id="play">▶ Lancer les 3</button>
+    <button id="step" class="ghost">Étape par étape</button>
+    <button id="shuffle" class="ghost">Nouveau tableau</button>
+  </div>
+
+  <div class="grid" id="grid"></div>
+
+  <div class="legend">
+    <span><span class="dot" style="background:#fbbf24"></span>Comparaison</span>
+    <span><span class="dot" style="background:#f87171"></span>Échange</span>
+    <span><span class="dot" style="background:#4ade80"></span>Déjà à sa place</span>
+  </div>
+
+<script>
+  const algos = [
+    {
+      id: 'bubble', name: '🫧 Tri à bulles', bigO: 'O(n²) — O(n) si déjà trié',
+      explain: "<b>Comment ça marche :</b> on compare les voisins deux à deux et on les échange s'ils sont mal ordonnés. À chaque passage, le plus grand « remonte comme une bulle » à la fin. <b>Idée clé :</b> si un passage ne fait aucun échange, c'est fini, on s'arrête."
+    },
+    {
+      id: 'selection', name: '🔍 Tri par sélection', bigO: 'O(n²) toujours',
+      explain: "<b>Comment ça marche :</b> on cherche le plus petit élément restant et on le place au début, puis on recommence. <b>Idée clé :</b> très peu d'échanges (au max n−1), mais il compare toujours tout, même si le tableau est déjà trié."
+    },
+    {
+      id: 'insertion', name: '🃏 Tri par insertion', bigO: 'O(n²) — O(n) si presque trié',
+      explain: "<b>Comment ça marche :</b> comme des cartes en main — on prend l'élément suivant et on l'insère à sa place parmi ceux déjà triés à gauche. <b>Idée clé :</b> le plus rapide des trois en pratique, imbattable sur un tableau presque trié."
+    }
+  ];
+
+  const grid = document.getElementById('grid');
+  let n = 14, playing = false, timer = null;
+  const states = {}; // id -> {arr, gen, cmp, swaps, done, barsEl, cmpEl, swEl, stateEl}
+
+  function randomArray() {
+    return Array.from({ length: n }, () => 5 + Math.floor(Math.random() * 95));
+  }
+
+  // --- Générateurs : yield {hi, swap, sorted} à chaque étape ---
+  function* bubble(a) {
+    const sorted = [];
+    for (let i = 0; i < a.length - 1; i++) {
+      let swapped = false;
+      for (let j = 0; j < a.length - 1 - i; j++) {
+        yield { cmp: 1, hi: [j, j + 1], swap: [], sorted };
+        if (a[j] > a[j + 1]) {
+          [a[j], a[j + 1]] = [a[j + 1], a[j]];
+          swapped = true;
+          yield { sw: 1, hi: [], swap: [j, j + 1], sorted };
+        }
+      }
+      sorted.push(a.length - 1 - i);
+      if (!swapped) { for (let k = 0; k < a.length; k++) sorted.push(k); return; }
+    }
+    sorted.push(0);
+  }
+  function* selection(a) {
+    const sorted = [];
+    for (let i = 0; i < a.length - 1; i++) {
+      let min = i;
+      for (let j = i + 1; j < a.length; j++) {
+        yield { cmp: 1, hi: [min, j], swap: [], sorted };
+        if (a[j] < a[min]) min = j;
+      }
+      if (min !== i) {
+        [a[i], a[min]] = [a[min], a[i]];
+        yield { sw: 1, hi: [], swap: [i, min], sorted };
+      }
+      sorted.push(i);
+    }
+    sorted.push(a.length - 1);
+  }
+  function* insertion(a) {
+    const sorted = [0];
+    for (let i = 1; i < a.length; i++) {
+      let j = i;
+      while (j > 0) {
+        yield { cmp: 1, hi: [j - 1, j], swap: [], sorted };
+        if (a[j] < a[j - 1]) {
+          [a[j], a[j - 1]] = [a[j - 1], a[j]];
+          j--;
+          yield { sw: 1, hi: [], swap: [j, j + 1], sorted };
+        } else break;
+      }
+      sorted.push(i);
+    }
+  }
+  const gens = { bubble, selection, insertion };
+
+  function buildPanels() {
+    grid.innerHTML = '';
+    for (const a of algos) {
+      const p = document.createElement('div');
+      p.className = 'panel';
+      p.title = 'Clique pour voir ce tri en grand';
+      p.onclick = () => {
+        const isFocused = p.classList.contains('focused');
+        document.querySelectorAll('.panel').forEach(q => q.classList.remove('focused'));
+        if (!isFocused) p.classList.add('focused');
+        grid.classList.toggle('focused', !isFocused);
+      };
+      p.innerHTML = `
+        <p class="hint">🔍 Clique pour agrandir / réduire</p>
+        <h2>${a.name}</h2>
+        <p class="big-o">${a.bigO}</p>
+        <div class="bars"></div>
+        <div class="stats">
+          <span>Comparaisons : <b class="c">0</b></span>
+          <span>Échanges : <b class="s">0</b></span>
+          <span class="st">Prêt</span>
+        </div>
+        <p class="explain">${a.explain}</p>`;
+      grid.appendChild(p);
+      states[a.id] = {
+        arr: [], gen: null, cmp: 0, swaps: 0, done: false,
+        barsEl: p.querySelector('.bars'),
+        cmpEl: p.querySelector('.c'), swEl: p.querySelector('.s'),
+        stateEl: p.querySelector('.st')
+      };
+    }
+  }
+
+  function render(st) {
+    st.barsEl.innerHTML = '';
+    st.arr.forEach((v, i) => {
+      const d = document.createElement('div');
+      d.className = 'bar';
+      const s = st.last || { hi: [], swap: [], sorted: [] };
+      if (s.hi.includes(i)) d.classList.add('compare');
+      if (s.swap.includes(i)) d.classList.add('swap');
+      if (s.sorted.includes(i)) d.classList.add('sorted');
+      d.style.height = v + '%';
+      const sp = document.createElement('span');
+      sp.className = 'val'; sp.textContent = v;
+      d.appendChild(sp);
+      st.barsEl.appendChild(d);
+    });
+    st.cmpEl.textContent = st.cmp;
+    st.swEl.textContent = st.swaps;
+  }
+
+  function reset() {
+    stop();
+    const data = randomArray();
+    for (const a of algos) {
+      const st = states[a.id];
+      st.arr = [...data];      // tous partent du MÊME tableau
+      st.gen = gens[a.id](st.arr);
+      st.cmp = 0; st.swaps = 0; st.done = false; st.last = null;
+      st.stateEl.textContent = 'Prêt';
+      st.stateEl.classList.remove('done');
+      render(st);
+    }
+  }
+
+  function stop() {
+    playing = false;
+    if (timer) { clearTimeout(timer); timer = null; }
+    document.getElementById('play').textContent = '▶ Lancer les 3';
+  }
+
+  function delay() { return 620 / +document.getElementById('speed').value; }
+
+  // fait avancer chaque algorithme d'une étape (les plus rapides avancent plus)
+  function step() {
+    let allDone = true;
+    for (const a of algos) {
+      const st = states[a.id];
+      if (st.done) continue;
+      const r = st.gen.next();
+      if (r.done) {
+        st.done = true;
+        st.last = { hi: [], swap: [], sorted: st.arr.map((_, i) => i) };
+        st.stateEl.textContent = '✅ Trié !';
+        st.stateEl.classList.add('done');
+      } else {
+        allDone = false;
+        st.cmp += r.value.cmp || 0;
+        st.swaps += r.value.sw || 0;
+        st.last = r.value;
+        st.stateEl.textContent = playing ? 'En cours…' : 'En pause';
+      }
+      render(st);
+    }
+    return !allDone;
+  }
+
+  function loop() {
+    if (!playing) return;
+    if (step()) timer = setTimeout(loop, delay());
+    else stop();
+  }
+
+  document.getElementById('play').onclick = () => {
+    if (playing) { stop(); return; }
+    playing = true;
+    document.getElementById('play').textContent = '⏸ Pause';
+    loop();
+  };
+  document.getElementById('step').onclick = () => { stop(); step(); };
+  document.getElementById('shuffle').onclick = reset;
+  document.getElementById('size').onchange = () => { n = +document.getElementById('size').value; reset(); };
+
+  buildPanels();
+  reset();
+</script>
+</div>
